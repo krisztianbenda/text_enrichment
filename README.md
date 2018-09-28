@@ -12,7 +12,7 @@ Névelem felismerés: olyan valakinek vagy valaminek az említése a szövegben,
 
 ## Megoldási ötletek:
 - Az általánosabb feldolgozási folyamat a következő:
-  - Tokenizálás, normalizálás, névelem detektálása, névelem normalizálása
+  - Tokenizálás, normalizálás/szótövezés, névelem detektálás, névelem normalizálás
 - Névelem detektálására az alábbi megközelítéseket ismerjük
   - Szótár alapú
     - Összes entitás összes formáját össze kell gyűjteni
