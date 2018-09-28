@@ -1,6 +1,8 @@
 # text_enrichment
 Text Enrichment
 
+Névelem felismerés: olyan valakinek vagy valaminek az említése a szövegben, mely érdekel bennünket továbbá szerepel az adatbázisban. Például személyek, helyszínek, gyógyszerek
+
 ## Vállalt részfeladatok:
 1.	Létező megoldások vizsgálata és kipróbálása
 2.	Órán tanult módszerek áttanulmányozása
@@ -9,7 +11,19 @@ Text Enrichment
 5.	Bemutató elkészítése és előadása
 
 ## Megoldási ötletek:
-
+- Tokenizálás, névelem detektálása, névelem normalizálása
+- Névelem detektálására az alábbi megközelítéseket ismerjük
+  - Szótár alapú
+    - Összes entitás összes formáját össze kell gyűjteni
+    - Nagy tudásbázis vagy annotált korpusz szükséges
+  - Szabály alapú
+    - Mintákat kell írni az entitások illesztéséhez
+    - Téma specifikus tudás szükséges
+  - Statisztikai modell alapú
+    - Valószínűségek hozzárendelése a szövegrészekhez
+    - Sok tanuló példány szükséges
+    - Előny: téma független tudás
+- Ezen detekciók használatának előnyeit fogjuk felmérni és ezalapján a legmegfelelőbbet kiválasztani.
 
 ## Használni tervezett szoftverek:
 -	Elsősorban Python 3-at szeretnénk használni
