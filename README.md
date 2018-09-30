@@ -15,7 +15,7 @@ Névelem felismerés: olyan valakinek vagy valaminek az említése a szövegben,
   - Tokenizálás, normalizálás/szótövezés, névelem detektálás, névelem normalizálás
 - Névelem detektálására az alábbi megközelítéseket ismerjük
   - Szótár alapú
-    - Összes entitás összes formáját össze kell gyűjteni
+    - Összes entitás összes formáját össze kell gyűjteni
     - Nagy tudásbázis vagy annotált korpusz szükséges
   - Szabály alapú
     - Mintákat kell írni az entitások illesztéséhez
@@ -26,7 +26,12 @@ Névelem felismerés: olyan valakinek vagy valaminek az említése a szövegben,
     - Előny: téma független tudás
 - Ezen detekciók használatának előnyeit fogjuk felmérni és ezalapján a legmegfelelőbbet kiválasztani.
 
-## Használni tervezett szoftverek:
+## Létező eszközök, módszerek
+- [spaCy](https://spacy.io): python library, statisztikai modell alapú NER, sokféle kategória támogatott, továbbtanítható saját kategóriákkal
+- [Stanford NER is a Named Entity Recognizer](https://nlp.stanford.edu/software/CRF-NER.shtml): Java library, kevés alapból támogatott kategória
+- [Named-Entity-Recognition-BLSTM-CNN-CoNLL](https://github.com/mxhofer/Named-Entity-Recognition-BidirectionalLSTM-CNN-CoNLL): implementation based on [this paper](https://arxiv.org/abs/1511.08308), Keras
+
+## Használni tervezett technólogiák:
 -	Elsősorban Python 3-at szeretnénk használni
--	Kisebb részfeladatok/algoritmusok kipróbálásához RapidMinder-t is igénybe vennénk
+-	Kisebb részfeladatok/algoritmusok kipróbálásához opcionálisan RapidMinder-t is igénybe vennénk
 -	A párhuzamos munkavégzést a GitHub segítségével oldanánk meg
