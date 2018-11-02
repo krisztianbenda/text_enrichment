@@ -44,9 +44,11 @@ NE = {
     "O": "O"
 }
 
-df = pd.read_csv("../../datasets/TrainNER_Pred_{}".format(model_name), sep=';',encoding='utf-8')
+df = pd.read_csv("../../datasets/TrainNER_Pred_{}.csv".format(model_name), sep=';',encoding='utf-8')
 
 df['Prediction'] = df.apply (lambda row: NE[row['OriginalPrediction']],axis=1)
+
+df.to_csv("../../datasets/TrainNER_Pred_{}.csv".format(model_name), sep=';',encoding='utf-8')
 
 results = {
     "Size": df.shape[0],

@@ -80,7 +80,7 @@ for i in tqdm(range(len(indexes)-1)):
 
 df['Prediction'] = df.apply (lambda row: NE[row['OriginalPrediction']],axis=1)
 
-df.to_csv("../../datasets/TrainNER_Pred_"+model_name, sep=';', encoding='utf-8')
+df.to_csv("../../datasets/TrainNER_Pred_"+model_name+'.csv', sep=';', encoding='utf-8')
 
 results = {
     "Size": df.shape[0],
