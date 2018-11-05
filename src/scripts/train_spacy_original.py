@@ -1,11 +1,9 @@
 import spacy
 import pandas as pd
-import numpy as np
 from spacy.util import minibatch, compounding
 import random 
 import argparse
 import os
-from tqdm import tqdm
 
 IT_N = 100
 SEN_N = 500
@@ -32,11 +30,7 @@ def add_SenteceID(df):
     return df
 
 def get_sentence(df, id):
-    indexes = df[df['Sentence #'].isnull() == False].index.values.tolist()
-    indexes.append(df.shape[0]-1)
-    start = indexes[id]
-    end = indexes[id+1]
-    words = df[(df.index >= start) & (df.index < end)]['Word'].values.tolist()
+    words = df[(df['SentenceID'] == id)]['Word'].values.tolist()
     return ' '.join(str(word) for word in words)
 
 def get_sentence_entities(df, sentence):
@@ -62,9 +56,8 @@ def get_precision(df):
     return tp / tp_fp * 1
 
 def create_train_data(df, sample_num):
-    n = len(df[df['Sentence #'].isnull() == False].index.values.tolist())
-    rands = random.sample(np.arange(n).tolist(), sample_num)
-    # rands = [int(x.split(' ')[1])+1 for x in rands]
+    rands = random.sample(df['Sentence #'].unique().tolist(), sample_num)
+    rands = [int(x.split(' ')[1])+1 for x in rands]
     train_data = []
     counter = 0
     for num in rands:
@@ -74,7 +67,7 @@ def create_train_data(df, sample_num):
         counter += 1
         if counter % 100 == 0:
             print(str(counter) + " training data have created\n")
-    return train_data, rands
+    return train_data
 
 def main():
     global IT_N, SEN_N, OUT_FILE
@@ -86,17 +79,14 @@ def main():
 
     base_df = pd.read_csv(os.path.join(os.getcwd(), 'datasets', 'TrainNER.csv'), delimiter=';', encoding='cp1252')
     print('TrainNER.csv has read...')
-    # base_df = add_SenteceID(base_df)
-    # print('SentenceIDs has added to the Data Frame...')
-    train_data, train_ids = create_train_data(base_df, SEN_N)
+    base_df = add_SenteceID(base_df)
+    print('SentenceIDs has added to the Data Frame...')
+    train_data = create_train_data(base_df, SEN_N)
     print('Train data has been created...')
 
     nlp = spacy.blank('en')
     ner = nlp.create_pipe('ner')
     nlp.add_pipe(ner, last=True)
-
-    # nlp.to_disk('./model')
-    # nlp = spacy.load('./model')
 
     for _, annotations in train_data:
         for ent in annotations.get('entities'):
@@ -122,63 +112,32 @@ def main():
             print(str(itn) + ' iteration with ' + str(losses))
 
     print("===========\nTraining is finished.\n===========\nStarting evaluation for the rest of the sentences.")
-    
-    df = base_df
+    predicted_df = base_df
+    sentenceID = 1
+    doc = nlp(get_sentence(predicted_df, sentenceID))
+    is_train_data = False
+    for index, row in predicted_df.iterrows():
+        if sentenceID != row['SentenceID']:
+            is_train_data = False
+            sentenceID = row['SentenceID']
+            sentence = get_sentence(predicted_df, sentenceID)
+            doc = nlp(sentence)
+            for data in train_data:
+                if sentence == data[0]:
+                    is_train_data = True
+                    break
 
-    indexes = df[df['Sentence #'].isnull() == False].index.values.tolist()
-    indexes.append(df.shape[0]-1)
-
-    df['Prediction'] = "O"
-    for k in tqdm(range(len(indexes)-1)):
-        is_trained = k in train_ids
-        start = indexes[k]
-        end = indexes[k+1]
-        init_tokens = df[(df.index >= start) & (df.index < end)]['Word'].values.tolist()
-        s = ' '.join(init_tokens)
-        doc = nlp(s)
-        ents = []
+        #If nlp does not find a class for word we set it 'O' because it is the most likely
+        predicted_df.loc[index,'Prediction'] = 'O'
+        #If there is a valid predicted class we change O
         for ent in doc.ents:
-            ents.append([ent.text, ent.label_])
-        i = 0
-        for j in range(len(init_tokens)):
-            if i < len(ents) and init_tokens[j] == ents[i][0]:
-                df.loc[df.index == start+j, 'Prediction'] = ents[i][1]
-                i += 1
-            df.loc[df.index == start+j, 'SentenceID'] = k
-            df.loc[df.index == start+j, 'is_trained'] = is_trained
-        # df[(df.index >= start) & (df.index < end)]
+            if row['Word'] == str(ent):
+                predicted_df.loc[index,'Prediction'] = ent.label_
+                break
 
-
-
-
-    # predicted_df = base_df
-    # sentenceID = 0
-    # doc = nlp(get_sentence(predicted_df, sentenceID))
-    # is_train_data = False
-    # for index, row in predicted_df.iterrows():
-    #     if sentenceID != row['SentenceID']:
-    #         is_train_data = False
-    #         sentenceID = row['SentenceID']
-    #         sentence = get_sentence(predicted_df, sentenceID)
-    #         doc = nlp(sentence)
-    #         for data in train_data:
-    #             if sentence == data[0]:
-    #                 is_train_data = True
-    #                 break
-
-    #     #If nlp does not find a class for word we set it 'O' because it is the most likely
-    #     predicted_df.loc[index,'Prediction'] = 'O'
-    #     #If there is a valid predicted class we change O
-    #     for ent in doc.ents:
-    #         if row['Word'] == str(ent):
-    #             predicted_df.loc[index,'Prediction'] = ent.label_
-    #             break
-
-    #     predicted_df.loc[index, 'is_trained'] = is_train_data
-    #     if index % 10000 == 0:
-    #         print('\t' + str(index) + ' rows predicted')
-
-    predicted_df = df
+        predicted_df.loc[index, 'is_trained'] = is_train_data
+        if index % 10000 == 0:
+            print('\t' + str(index) + ' rows predicted')
 
     predicted_df.to_csv(OUT_FILE, sep=';')
     print('==============')
