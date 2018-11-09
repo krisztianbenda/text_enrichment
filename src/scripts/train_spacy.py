@@ -123,17 +123,17 @@ def main():
 
     print("===========\nTraining is finished.\n===========\nStarting evaluation for the rest of the sentences.")
     
-    df = base_df
 
-    indexes = df[df['Sentence #'].isnull() == False].index.values.tolist()
-    indexes.append(df.shape[0]-1)
+    indexes = base_df[base_df['Sentence #'].isnull() == False].index.values.tolist()
+    indexes.append(base_df.shape[0]-1)
 
-    df['Prediction'] = "O"
+    base_df['Prediction'] = "O"
     for k in tqdm(range(len(indexes)-1)):
+    # for k in tqdm(range(500)):
         is_trained = k in train_ids
         start = indexes[k]
         end = indexes[k+1]
-        init_tokens = df[(df.index >= start) & (df.index < end)]['Word'].values.tolist()
+        init_tokens = base_df[(base_df.index >= start) & (base_df.index < end)]['Word'].values.tolist()
         s = ' '.join(init_tokens)
         doc = nlp(s)
         ents = []
@@ -142,10 +142,10 @@ def main():
         i = 0
         for j in range(len(init_tokens)):
             if i < len(ents) and init_tokens[j] == ents[i][0]:
-                df.loc[df.index == start+j, 'Prediction'] = ents[i][1]
+                base_df.loc[base_df.index == start+j, 'Prediction'] = ents[i][1]
                 i += 1
-            df.loc[df.index == start+j, 'SentenceID'] = k
-            df.loc[df.index == start+j, 'is_trained'] = is_trained
+            # base_df.loc[base_df.index == start+j, 'SentenceID'] = k
+            base_df.loc[base_df.index == start+j, 'is_trained'] = is_trained
         # df[(df.index >= start) & (df.index < end)]
 
 
@@ -178,7 +178,7 @@ def main():
     #     if index % 10000 == 0:
     #         print('\t' + str(index) + ' rows predicted')
 
-    predicted_df = df
+    predicted_df = base_df
 
     predicted_df.to_csv(OUT_FILE, sep=';')
     print('==============')
