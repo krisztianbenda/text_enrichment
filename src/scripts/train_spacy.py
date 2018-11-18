@@ -59,7 +59,7 @@ def get_recall(df):
 def get_precision(df):
     tp = df.loc[(df['Tag'] != 'O') & (df['Tag'] == df['Prediction']) & (df['is_trained'] == False)].shape[0]
     tp_fp = df.loc[(df['Prediction'] != 'O') & (df['is_trained'] == False)].shape[0] - 1
-    return tp / tp_fp * 1
+    return tp / tp_fp * 100
 
 def create_train_data(df, sample_num):
     n = len(df[df['Sentence #'].isnull() == False].index.values.tolist())
