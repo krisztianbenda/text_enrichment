@@ -1,5 +1,5 @@
 import uuid
-from src.NER_engine import do_NER
+from ..ner.NER_engine import do_NER
 
 texts = {str: uuid.UUID}
 
