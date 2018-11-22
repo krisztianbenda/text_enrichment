@@ -5,22 +5,60 @@ from random import randint
 from uuid import uuid4 as uuid
 
 from werkzeug.exceptions import abort
+import googlemaps
 
 app = Flask(__name__)
 
-ner_endpoint = 'http://127.0.0.1:5001/'
-respond_handler = 'http://127.0.0.1:5000/entities'
+ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
+respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
-data = {}
 documents_dict = {}
+gmaps = googlemaps.Client(key='AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk')
+
+
+def process_loc(location):
+    # Tulleptem a napi limitet, 👇 ezert nem ad vissza eredmenyt
+    # geocode_results = gmaps.geocode(location)
+    # Erdetileg ez lenne a valasz a Mount Everestre:
+    geocode_results = [{'address_components': [{'long_name': 'Mount Everest', 'short_name': 'Monte Everest', 'types': ['establishment', 'natural_feature']}], 'formatted_address': 'Mt Everest', 'geometry': {'location': {'lat': 27.9881206, 'lng': 86.9249751}, 'location_type': 'APPROXIMATE', 'viewport': {'northeast': {'lat': 27.9979732, 'lng': 86.94098249999999}, 'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}}, 'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'}, 'types': ['establishment', 'natural_feature']}]
+    # Ilyen linkke kell alakitani:
+    # https://www.google.com/maps/search/?api=3&query=27.9881206,86.9249751&query_place_id=ChIJvZ69FaJU6DkRsrqrBvjcdgU
+    return ('https://www.google.com/maps/search/?api=1&' +
+            'query=' + str(geocode_results[0]['geometry']['location']['lat']) +
+            ',' + str(geocode_results[0]['geometry']['location']['lng']) +
+            '&query_place_id=' + str(geocode_results[0]['place_id']))
+
+
+def process_gpe(gpe):
+    print("CURRENTLY NOT SUPPORTED: " + gpe)
+
+
+def process_org(org):
+    print("CURRENTLY NOT SUPPORTED: " + org)
+
+
+def process_event(event):
+    print("CURRENTLY NOT SUPPORTED: " + event)
+
+
+def process_woa(woa):
+    print("CURRENTLY NOT SUPPORTED: " + woa)
+
+
+def process_date(date):
+    print("CURRENTLY NOT SUPPORTED: " + date)
+
+
+def process_time(time):
+    print("CURRENTLY NOT SUPPORTED: " + time)
 
 
 class Document:
-
     text = str
     id = str
     data_id = str
     status = str
+    entities = [dict]
 
     def __init__(self, json_string):
         self.__dict__ = json.loads(json_string)
@@ -29,29 +67,48 @@ class Document:
         self.status = 'initialized'
         documents_dict[self.id] = self
 
+    def process_entities(self):
+        entity_options = {'LOC': process_loc,
+                          'GPE': process_gpe,
+                          'EVENT': process_event,
+                          'ORG': process_org,
+                          'WORK_OF_ART': process_woa,
+                          'DATE': process_date,
+                          'TIME': process_time
+                          }
+        for entity in self.entities:
+            for key in entity.keys():
+                if entity[key] in entity_options.keys():
+                    link = entity_options[entity[key]](key)
+                    entity[key] = {'label': entity[key], 'link': link}
+                else:
+                    entity[key] = {'label': 'NOT_SUPPORTED', 'link': ""}
+
 
 def gen_doc_id():
     new_id = randint(100000, 999999)
     while new_id in documents_dict.keys():
         randint(100000, 999999)
-    return str(new_id)
+    return 'doc-' + str(new_id)
 
 
+# /text_enrichment/doc/new_doc
 @app.route('/', methods=['POST'])
 def add_document():
     if 'text' not in json.loads(request.data).keys():
         abort(400)
     doc = Document(request.data)
-    data[doc.data_id] = 'in progress'
+    doc.status = 'in progress'
     requests.post(ner_endpoint, json={'endpoint': respond_handler, 'id': doc.data_id, 'text': doc.text})
     return doc.id
 
 
-@app.route('/', methods=['GET'])
+@app.route('/text_enrichment', methods=['GET'])
 def index():
     return render_template('index.html')
 
 
+# /text_enrichment/<doc_id>
 @app.route('/<doc_id>', methods=['GET'])
 def get_results_page(doc_id):
     if doc_id not in documents_dict.keys():
@@ -59,20 +116,25 @@ def get_results_page(doc_id):
     return render_template('results.html')
 
 
+# /text_enrichment/doc/results/<doc_id>
 @app.route('/api/<doc_id>', methods=['GET'])
 def get_results(doc_id):
     if doc_id not in documents_dict.keys():
         abort(404)
-    results = data[documents_dict[doc_id].data_id]
-    if results == 'in progress':
+    if documents_dict[doc_id].status == 'in progress':
         return json.dumps({'status': 'in progress'})
-    return json.dumps({'status': 'ready', 'entities': results})
+    return json.dumps({'status': 'ready', 'entities': json.dumps(documents_dict[doc_id].entities)})
 
 
-@app.route('/entities', methods=['POST'])
+@app.route('/text_enrichment/doc/entities', methods=['POST'])
 def add_entities():
     r_data = json.loads(request.data)
-    data[r_data['id']] = json.dumps({'entities': r_data['entities']})
+    for doc in documents_dict.values():
+        if doc.data_id == r_data['id']:
+            print(r_data['entities'])
+            doc.entities = r_data['entities']
+            doc.process_entities()
+            doc.status = 'done'
     return 'ok'
 
 

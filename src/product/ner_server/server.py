@@ -17,7 +17,7 @@ def do_NER(text):
     doc = nlp(text)
     ents = []
     for ent in doc.ents:
-        ents.append([ent.text, ent.label_])
+        ents.append({ent.text: ent.label_})
     return ents
 
 
@@ -26,7 +26,7 @@ def process_request(data):
     requests.post(data['endpoint'], json={'id': data['id'], 'entities': ents})
 
 
-@app.route('/', methods=['POST'])
+@app.route('/text_enrichment/ner', methods=['POST'])
 def handle_request():
     data = json.loads(request.data)
     if 'text' not in data.keys() or 'id' not in data.keys() or 'endpoint' not in data.keys():
