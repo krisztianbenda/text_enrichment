@@ -15,6 +15,7 @@ respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
 documents_dict = {}
 gmaps = googlemaps.Client(key='AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk')
+wiki.set_lang('en')
 
 
 def build_maps_link(place):
@@ -31,7 +32,7 @@ def build_maps_link(place):
 
 
 def build_wiki_link(entity):
-    return wiki.set_lang('en').page(entity).url
+    return wiki.page(entity).url
 
 
 def process_loc(location):
