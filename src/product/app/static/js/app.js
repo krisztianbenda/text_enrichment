@@ -1,5 +1,5 @@
 function sendDoc() {
-    var dataJSON = {}
+    var dataJSON = {};
     if (document.getElementById("userDoc").value === "") {
         console.info('no doc to process');
     } else {

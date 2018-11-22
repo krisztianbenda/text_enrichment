@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 nlp = spacy.load("en_core_web_lg")
 
+
 def do_NER(text):
     doc = nlp(text)
     ents = []
