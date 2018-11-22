@@ -6,6 +6,7 @@ from uuid import uuid4 as uuid
 
 from werkzeug.exceptions import abort
 import googlemaps
+import wikipedia as wiki
 
 app = Flask(__name__)
 
@@ -16,7 +17,7 @@ documents_dict = {}
 gmaps = googlemaps.Client(key='AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk')
 
 
-def process_loc(location):
+def build_maps_link(place):
     # Tulleptem a napi limitet, 👇 ezert nem ad vissza eredmenyt
     # geocode_results = gmaps.geocode(location)
     # Erdetileg ez lenne a valasz a Mount Everestre:
@@ -29,16 +30,24 @@ def process_loc(location):
             '&query_place_id=' + str(geocode_results[0]['place_id']))
 
 
+def build_wiki_link(entity):
+    return wiki.set_lang('en').page(entity).url
+
+
+def process_loc(location):
+    return build_maps_link(location)
+
+
 def process_gpe(gpe):
-    print("CURRENTLY NOT SUPPORTED: " + gpe)
+    return build_maps_link(gpe)
 
 
 def process_org(org):
-    print("CURRENTLY NOT SUPPORTED: " + org)
+    return build_wiki_link(org)
 
 
 def process_event(event):
-    print("CURRENTLY NOT SUPPORTED: " + event)
+    return build_wiki_link(event)
 
 
 def process_woa(woa):
