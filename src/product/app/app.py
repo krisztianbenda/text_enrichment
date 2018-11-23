@@ -3,12 +3,13 @@ from flask import Flask, request, render_template
 import simplejson as json
 from random import randint
 from uuid import uuid4 as uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 import dateutil.parser as time_parser
+import unidecode
+import sys
 
 from werkzeug.exceptions import abort
 import googlemaps
-from googleapiclient.discovery import build
 import wikipedia as wiki
 
 app = Flask(__name__)
@@ -34,6 +35,10 @@ def build_maps_link(place):
                                   'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}},
         'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'},
         'types': ['establishment', 'natural_feature']}]
+    print(geocode_results)
+    if len(geocode_results) == 0:
+        '''Location Not Found => we just search for it on Google'''
+        return build_wiki_link(place)
     return ('https://www.google.com/maps/search/?api=1&' +
             'query=' + str(geocode_results[0]['geometry']['location']['lat']) +
             ',' + str(geocode_results[0]['geometry']['location']['lng']) +
@@ -51,12 +56,24 @@ def build_calendar_link(datetime_string):
                 '&details=' + 'This+date+and+time+found+by+text+enrichment'
                 # + '&location=' + 'Waldorf+Astoria,+301+Park+Ave+,+New+York,+NY+10022&sf=true&output=xml'
                 )
-    except:
+    except ValueError as err:
+        print(err)
         return 'NOT_SUPPORTED'
 
 
 def build_wiki_link(entity):
-    return wiki.page(entity).url
+    try:
+        return wiki.page(entity).url
+    except:
+        return build_search_link(entity)
+
+
+def build_image_search_link(expression):
+    return "https://www.google.hu/search?hl=en&tbm=isch&q=" + expression.replace(' ', '+')
+
+
+def build_search_link(expression):
+    return "https://www.google.hu/search?hl=en&q=" + unidecode.unidecode(expression).replace(' ', '+')
 
 
 def process_loc(location):
@@ -75,8 +92,8 @@ def process_event(event):
     return build_wiki_link(event)
 
 
-def process_woa(woa):
-    print("CURRENTLY NOT SUPPORTED: " + woa)
+def process_work_of_art(woa):
+    return build_image_search_link(woa)
 
 
 def process_date(date):
@@ -87,6 +104,10 @@ def process_date(date):
 def process_time(time):
     link = build_calendar_link(time)
     return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
+
+
+def process_person(person):
+    return build_wiki_link(person)
 
 
 class Document:
@@ -108,9 +129,10 @@ class Document:
                           'GPE': process_gpe,
                           'EVENT': process_event,
                           'ORG': process_org,
-                          'WORK_OF_ART': process_woa,
+                          'WORK_OF_ART': process_work_of_art,
                           'DATE': process_date,
-                          'TIME': process_time
+                          'TIME': process_time,
+                          'PERSON': process_person
                           }
         for entity in self.entities:
             for key in entity.keys():
