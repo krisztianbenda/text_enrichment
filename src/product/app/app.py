@@ -1,12 +1,11 @@
 import requests
 from flask import Flask, request, render_template
-import json
+import simplejson as json
 from random import randint
 from uuid import uuid4 as uuid
 from datetime import timedelta
 import dateutil.parser as time_parser
 import unidecode
-from json import JSONEncoder
 
 from werkzeug.exceptions import abort
 import googlemaps
@@ -204,7 +203,7 @@ def get_results(doc_id):
     print(json.dumps({'status': documents[doc_id].status,
                       'entities': documents[doc_id].entities}, cls=EntityEncoder))
     return json.dumps({'status': documents[doc_id].status,
-                       'entities': documents[doc_id].entities}, cls=EntityEncoder)
+                       'entities': json.dumps(documents[doc_id].entities, cls=EntityEncoder)})
 
 
 @app.route('/text_enrichment/doc/entities', methods=['POST'])
