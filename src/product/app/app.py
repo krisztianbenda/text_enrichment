@@ -113,11 +113,15 @@ class Entity(object):
     expression = str
     label = str
     link = str
+    start_char = int
+    end_char = int
 
-    def __init__(self, expression, label, link):
+    def __init__(self, expression, label, start_char, end_char, link):
         self.expression = expression
         self.label = label
         self.link = link
+        self.start_char = start_char
+        self.end_char = end_char
 
 
 class EntityEncoder(json.JSONEncoder):
@@ -153,14 +157,16 @@ class Document:
                           'PERSON': process_person
                           }
         for entity in entities:
-            for key in entity.keys():
-
-                if entity[key] in entity_options.keys():
-                    link = entity_options[entity[key]](key)
-                    new_entity: Entity = Entity(unidecode.unidecode(key), entity[key], link)
-                    self.entities.append(new_entity)
-                else:
-                    '''Found entity not supported'''
+            if len(entity) != 4:
+                print('There is a problem with the entity fields length: {}'.format(entity))
+                continue
+            if entity[1] in entity_options.keys():
+                link = entity_options[entity[1]](entity[0])
+                new_entity: Entity = Entity(unidecode.unidecode(entity[0]), entity[1], entity[2], entity[3], link)
+                self.entities.append(new_entity)
+            else:
+                '''Found entity not supported'''
+                print('Found entity not supported: {} - {}'.format(entity[0], entity[1]))
 
 
 def gen_doc_id():
@@ -170,7 +176,7 @@ def gen_doc_id():
     return 'doc-' + str(new_id)
 
 
-# /text_enrichment/doc/new_doc
+# /text_enrichment/new_doc ❌
 @app.route('/', methods=['POST'])
 def add_document():
     if 'text' not in json.loads(request.data).keys():
@@ -181,11 +187,13 @@ def add_document():
     return doc.id
 
 
+# /text_enrichment ✅
 @app.route('/text_enrichment', methods=['GET'])
 def index():
     return render_template('index.html')
 
 
+# /text_enrichment/<doc_id> ✅
 @app.route('/text_enrichment/<doc_id>', methods=['GET'])
 def get_results_page(doc_id):
     if doc_id not in documents.keys():
@@ -193,19 +201,18 @@ def get_results_page(doc_id):
     return render_template('results.html')
 
 
-# /text_enrichment/doc/results/<doc_id>
+# /text_enrichment/<doc_id>/results ❌
 @app.route('/api/<doc_id>', methods=['GET'])
 def get_results(doc_id):
     if doc_id not in documents.keys():
         abort(404)
     if documents[doc_id].status == 'in progress':
         return json.dumps({'status': 'in progress'})
-    print(json.dumps({'status': documents[doc_id].status,
-                      'entities': documents[doc_id].entities}, cls=EntityEncoder))
     return json.dumps({'status': documents[doc_id].status,
                        'entities': json.dumps(documents[doc_id].entities, cls=EntityEncoder)})
 
 
+# /text_enrichment/upload_entities ❌
 @app.route('/text_enrichment/doc/entities', methods=['POST'])
 def add_entities():
     r_data = json.loads(request.data)
@@ -216,14 +223,20 @@ def add_entities():
     return 'ok'
 
 
-@app.route('/text_enrichment/doc/<doc_id>/loc', methods=['GET'])
-def get_summary(doc_id):
-    doc = documents[doc_id]
-    locations = []
-    for entity in doc.entities:
-        if entity.label == 'LOC':
-            locations.append(entity)
-    return locations
+# /text_enrichment/<doc_id>/labels ✅
+@app.route('/text_enrichment/<doc_id>/labels', methods=['GET'])
+def get_labels(doc_id):
+    if doc_id not in documents.keys():
+        abort(404)
+    labels = {"labels": []}
+    for entity in documents[doc_id].entities:
+        if entity.label not in labels['labels']:
+            labels['labels'].append(entity.label)
+    labels['labels'].sort()
+    return json.dumps(labels)
+
+
+
 
 
 if __name__ == "__main__":

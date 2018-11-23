@@ -15,10 +15,10 @@ nlp = spacy.load("en_core_web_lg")
 
 def do_NER(text):
     doc = nlp(text)
-    ents = []
+    entities = []
     for ent in doc.ents:
-        ents.append({ent.text: ent.label_})
-    return ents
+        entities.append([ent.text, ent.label_, ent.start_char, ent.end_char])
+    return entities
 
 
 def process_request(data):
