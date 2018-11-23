@@ -16,7 +16,7 @@ app = Flask(__name__)
 ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
 respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
-documents: {}
+documents = {}
 google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
 gmaps = googlemaps.Client(key=google_api_key)
 cse_engine_id = '005196073466017333319:sj3-tx-jmis'
@@ -168,6 +168,14 @@ class Document:
                 '''Found entity not supported'''
                 print('Found entity not supported: {} - {}'.format(entity[0], entity[1]))
 
+    def get_labels(self):
+        labels = []
+        for entity in self.entities:
+            if entity.label not in labels:
+                labels.append(entity.label)
+        labels.sort()
+        return labels
+
 
 def gen_doc_id():
     new_id = randint(100000, 999999)
@@ -228,21 +236,28 @@ def add_entities():
 def get_labels(doc_id):
     if doc_id not in documents.keys():
         abort(404)
-    labels = {"labels": []}
-    for entity in documents[doc_id].entities:
-        if entity.label not in labels['labels']:
-            labels['labels'].append(entity.label)
-    labels['labels'].sort()
-    return json.dumps(labels)
+    return json.dumps({"labels": documents[doc_id].get_labels()})
 
-#
-# @app.route('/text_enrichment')
-# def get_summary(doc_id):
-#     if doc_id not in documents.keys():
-#         abort(404)
-#     labels = get_labels(doc_id)
-#     summary = {'summary': []}
-#     for entity in documents[doc_id].entities:
+
+@app.route('/text_enrichment/<doc_id>/summary', methods=['GET'])
+def get_summary(doc_id):
+    if doc_id not in documents.keys():
+        abort(404)
+
+    labels = documents[doc_id].get_labels()
+    label_summary = {}
+    summary = {}
+    for label in labels:
+        summary[label] = []
+        for entity in documents[doc_id].entities:
+            if entity.label == label:
+                label_summary[entity.expression] = {'start_char': entity.start_char,
+                                                    'end_char': entity.end_char,
+                                                    'link': entity.link}
+        summary[label].append(label_summary)
+        label_summary = {}
+    print(summary)
+    return json.dumps(summary)
 
 
 
