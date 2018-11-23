@@ -245,18 +245,18 @@ def get_summary(doc_id):
         abort(404)
 
     labels = documents[doc_id].get_labels()
-    label_summary = {}
+    label_summary = []
     summary = {}
     for label in labels:
         summary[label] = []
         for entity in documents[doc_id].entities:
             if entity.label == label:
-                label_summary[entity.expression] = {'start_char': entity.start_char,
-                                                    'end_char': entity.end_char,
-                                                    'link': entity.link}
-        summary[label].append(label_summary)
-        label_summary = {}
-    print(summary)
+                label_summary.append({'expression': entity.expression,
+                                      'start_char': entity.start_char,
+                                      'end_char': entity.end_char,
+                                      'link': entity.link})
+        summary[label] = label_summary
+        label_summary = []
     return json.dumps(summary)
 
 
