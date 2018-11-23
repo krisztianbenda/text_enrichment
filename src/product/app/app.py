@@ -1,12 +1,12 @@
 import requests
 from flask import Flask, request, render_template
-import simplejson as json
+import json
 from random import randint
 from uuid import uuid4 as uuid
 from datetime import timedelta
 import dateutil.parser as time_parser
 import unidecode
-import sys
+from json import JSONEncoder
 
 from werkzeug.exceptions import abort
 import googlemaps
@@ -17,7 +17,7 @@ app = Flask(__name__)
 ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
 respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
-documents_dict = {}
+documents = {}
 google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
 gmaps = googlemaps.Client(key=google_api_key)
 cse_engine_id = '005196073466017333319:sj3-tx-jmis'
@@ -35,7 +35,7 @@ def build_maps_link(place):
                                   'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}},
         'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'},
         'types': ['establishment', 'natural_feature']}]
-    print(geocode_results)
+    # print(geocode_results)
     if len(geocode_results) == 0:
         '''Location Not Found => we just search for it on Google'''
         return build_wiki_link(place)
@@ -110,21 +110,40 @@ def process_person(person):
     return build_wiki_link(person)
 
 
+class Entity(object):
+    expression = str
+    label = str
+    link = str
+
+    def __init__(self, expression, label, link):
+        self.expression = expression
+        self.label = label
+        self.link = link
+
+
+class EntityEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Entity):
+            return o.__dict__
+        return EntityEncoder(self, o)
+
+
 class Document:
     text = str
     id = str
     data_id = str
     status = str
-    entities = [dict]
+    entities = [Entity]
 
     def __init__(self, json_string):
         self.__dict__ = json.loads(json_string)
         self.id = gen_doc_id()
         self.data_id = str(uuid())
         self.status = 'initialized'
-        documents_dict[self.id] = self
+        self.entities = []
+        documents[self.id] = self
 
-    def process_entities(self):
+    def process_entities(self, entities):
         entity_options = {'LOC': process_loc,
                           'GPE': process_gpe,
                           'EVENT': process_event,
@@ -134,18 +153,20 @@ class Document:
                           'TIME': process_time,
                           'PERSON': process_person
                           }
-        for entity in self.entities:
+        for entity in entities:
             for key in entity.keys():
+
                 if entity[key] in entity_options.keys():
                     link = entity_options[entity[key]](key)
-                    entity[key] = {'label': entity[key], 'link': link}
+                    new_entity: Entity = Entity(unidecode.unidecode(key), entity[key], link)
+                    self.entities.append(new_entity)
                 else:
-                    entity[key] = {'label': 'NOT_SUPPORTED', 'link': ""}
+                    '''Found entity not supported'''
 
 
 def gen_doc_id():
     new_id = randint(100000, 999999)
-    while new_id in documents_dict.keys():
+    while new_id in documents.keys():
         randint(100000, 999999)
     return 'doc-' + str(new_id)
 
@@ -157,7 +178,6 @@ def add_document():
         abort(400)
     doc = Document(request.data)
     doc.status = 'in progress'
-    print(doc.id)
     requests.post(ner_endpoint, json={'endpoint': respond_handler, 'id': doc.data_id, 'text': doc.text})
     return doc.id
 
@@ -169,7 +189,7 @@ def index():
 
 @app.route('/text_enrichment/<doc_id>', methods=['GET'])
 def get_results_page(doc_id):
-    if doc_id not in documents_dict.keys():
+    if doc_id not in documents.keys():
         abort(404)
     return render_template('results.html')
 
@@ -177,23 +197,34 @@ def get_results_page(doc_id):
 # /text_enrichment/doc/results/<doc_id>
 @app.route('/api/<doc_id>', methods=['GET'])
 def get_results(doc_id):
-    if doc_id not in documents_dict.keys():
+    if doc_id not in documents.keys():
         abort(404)
-    if documents_dict[doc_id].status == 'in progress':
+    if documents[doc_id].status == 'in progress':
         return json.dumps({'status': 'in progress'})
-    return json.dumps({'status': 'ready', 'entities': json.dumps(documents_dict[doc_id].entities)})
+    print(json.dumps({'status': documents[doc_id].status,
+                      'entities': documents[doc_id].entities}, cls=EntityEncoder))
+    return json.dumps({'status': documents[doc_id].status,
+                       'entities': documents[doc_id].entities}, cls=EntityEncoder)
 
 
 @app.route('/text_enrichment/doc/entities', methods=['POST'])
 def add_entities():
     r_data = json.loads(request.data)
-    for doc in documents_dict.values():
+    for doc in documents.values():
         if doc.data_id == r_data['id']:
-            print(r_data['entities'])
-            doc.entities = r_data['entities']
-            doc.process_entities()
-            doc.status = 'done'
+            doc.process_entities(r_data['entities'])
+            doc.status = 'processed'
     return 'ok'
+
+
+@app.route('/text_enrichment/doc/<doc_id>/loc', methods=['GET'])
+def get_summary(doc_id):
+    doc = documents[doc_id]
+    locations = []
+    for entity in doc.entities:
+        if entity.label == 'LOC':
+            locations.append(entity)
+    return locations
 
 
 if __name__ == "__main__":
