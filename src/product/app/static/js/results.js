@@ -9,7 +9,7 @@ function poll() {
             if (data.status === 'in progress'){
                 document.getElementById('doc').textContent = 'in progress';
                 setTimeout(poll, 500);
-            } else if(data.status === 'ready') {
+            } else if(data.status === 'processed') {
                 document.getElementById('doc').textContent = data.entities;
             }
         }
