@@ -16,7 +16,7 @@ app = Flask(__name__)
 ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
 respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
-documents = {}
+documents: {}
 google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
 gmaps = googlemaps.Client(key=google_api_key)
 cse_engine_id = '005196073466017333319:sj3-tx-jmis'
@@ -110,11 +110,11 @@ def process_person(person):
 
 
 class Entity(object):
-    expression = str
-    label = str
-    link = str
-    start_char = int
-    end_char = int
+    expression: str
+    label: str
+    link: str
+    start_char: int
+    end_char: int
 
     def __init__(self, expression, label, start_char, end_char, link):
         self.expression = expression
@@ -132,11 +132,11 @@ class EntityEncoder(json.JSONEncoder):
 
 
 class Document:
-    text = str
-    id = str
-    data_id = str
-    status = str
-    entities = [Entity]
+    text: str
+    id: str
+    data_id: str
+    status: str
+    entities: [Entity]
 
     def __init__(self, json_string):
         self.__dict__ = json.loads(json_string)
@@ -235,7 +235,14 @@ def get_labels(doc_id):
     labels['labels'].sort()
     return json.dumps(labels)
 
-
+#
+# @app.route('/text_enrichment')
+# def get_summary(doc_id):
+#     if doc_id not in documents.keys():
+#         abort(404)
+#     labels = get_labels(doc_id)
+#     summary = {'summary': []}
+#     for entity in documents[doc_id].entities:
 
 
 
