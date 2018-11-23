@@ -3,9 +3,12 @@ from flask import Flask, request, render_template
 import simplejson as json
 from random import randint
 from uuid import uuid4 as uuid
+from datetime import datetime, timedelta
+import dateutil.parser as time_parser
 
 from werkzeug.exceptions import abort
 import googlemaps
+from googleapiclient.discovery import build
 import wikipedia as wiki
 
 app = Flask(__name__)
@@ -14,21 +17,42 @@ ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
 respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
 
 documents_dict = {}
-gmaps = googlemaps.Client(key='AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk')
+google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
+gmaps = googlemaps.Client(key=google_api_key)
+cse_engine_id = '005196073466017333319:sj3-tx-jmis'
 wiki.set_lang('en')
 
 
 def build_maps_link(place):
-    # Tulleptem a napi limitet, 👇 ezert nem ad vissza eredmenyt
-    # geocode_results = gmaps.geocode(location)
+    # geocode_results = gmaps.geocode(place)
     # Erdetileg ez lenne a valasz a Mount Everestre:
-    geocode_results = [{'address_components': [{'long_name': 'Mount Everest', 'short_name': 'Monte Everest', 'types': ['establishment', 'natural_feature']}], 'formatted_address': 'Mt Everest', 'geometry': {'location': {'lat': 27.9881206, 'lng': 86.9249751}, 'location_type': 'APPROXIMATE', 'viewport': {'northeast': {'lat': 27.9979732, 'lng': 86.94098249999999}, 'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}}, 'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'}, 'types': ['establishment', 'natural_feature']}]
-    # Ilyen linkke kell alakitani:
-    # https://www.google.com/maps/search/?api=3&query=27.9881206,86.9249751&query_place_id=ChIJvZ69FaJU6DkRsrqrBvjcdgU
+    geocode_results = [{'address_components': [
+        {'long_name': 'Mount Everest', 'short_name': 'Monte Everest', 'types': ['establishment', 'natural_feature']}],
+        'formatted_address': 'Mt Everest',
+        'geometry': {'location': {'lat': 27.9881206, 'lng': 86.9249751}, 'location_type': 'APPROXIMATE',
+                     'viewport': {'northeast': {'lat': 27.9979732, 'lng': 86.94098249999999},
+                                  'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}},
+        'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'},
+        'types': ['establishment', 'natural_feature']}]
     return ('https://www.google.com/maps/search/?api=1&' +
             'query=' + str(geocode_results[0]['geometry']['location']['lat']) +
             ',' + str(geocode_results[0]['geometry']['location']['lng']) +
             '&query_place_id=' + str(geocode_results[0]['place_id']))
+
+
+def build_calendar_link(datetime_string):
+    # noinspection PyBroadException
+    try:
+        date = time_parser.parse(datetime_string)
+        return ('https://www.google.com/calendar/render?action=TEMPLATE&' +
+                'text=' + 'Event+From+Text+Enrichment' +
+                '&dates=' + date.strftime('%Y%m%dT%H%M%SZ') + '/' + (date + timedelta(hours=1)).strftime(
+                    '%Y%m%dT%H%M%SZ') +
+                '&details=' + 'This+date+and+time+found+by+text+enrichment'
+                # + '&location=' + 'Waldorf+Astoria,+301+Park+Ave+,+New+York,+NY+10022&sf=true&output=xml'
+                )
+    except:
+        return 'NOT_SUPPORTED'
 
 
 def build_wiki_link(entity):
@@ -56,11 +80,13 @@ def process_woa(woa):
 
 
 def process_date(date):
-    print("CURRENTLY NOT SUPPORTED: " + date)
+    link = build_calendar_link(date)
+    return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
 
 
 def process_time(time):
-    print("CURRENTLY NOT SUPPORTED: " + time)
+    link = build_calendar_link(time)
+    return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
 
 
 class Document:
@@ -109,6 +135,7 @@ def add_document():
         abort(400)
     doc = Document(request.data)
     doc.status = 'in progress'
+    print(doc.id)
     requests.post(ner_endpoint, json={'endpoint': respond_handler, 'id': doc.data_id, 'text': doc.text})
     return doc.id
 
@@ -118,8 +145,7 @@ def index():
     return render_template('index.html')
 
 
-# /text_enrichment/<doc_id>
-@app.route('/<doc_id>', methods=['GET'])
+@app.route('/text_enrichment/<doc_id>', methods=['GET'])
 def get_results_page(doc_id):
     if doc_id not in documents_dict.keys():
         abort(404)
