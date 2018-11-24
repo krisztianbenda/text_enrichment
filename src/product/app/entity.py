@@ -3,14 +3,14 @@ import simplejson as json
 
 class Entity(object):
     expression: str
-    label: str
+    label_name: str
     link: str
     start_char: int
     end_char: int
 
     def __init__(self, expression, label, start_char, end_char, link):
         self.expression = expression
-        self.label = label
+        self.label_name = label
         self.link = link
         self.start_char = start_char
         self.end_char = end_char
