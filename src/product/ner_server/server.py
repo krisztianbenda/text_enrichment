@@ -25,7 +25,7 @@ def process_request(data):
     requests.post(data['endpoint'], json={'id': data['id'], 'entities': entities})
 
 
-@app.route('/text_enrichment/ner', methods=['POST'])
+@app.route('/text-processing/ner', methods=['POST'])
 def handle_request():
     data = json.loads(request.data)
     if 'text' not in data.keys() or 'id' not in data.keys() or 'endpoint' not in data.keys():

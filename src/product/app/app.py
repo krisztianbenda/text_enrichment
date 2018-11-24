@@ -12,8 +12,8 @@ from entity import EntityEncoder
 
 app = Flask(__name__)
 
-ner_endpoint = 'http://127.0.0.1:5001/text_enrichment/ner'
-respond_handler = 'http://127.0.0.1:5000/text_enrichment/doc/entities'
+ner_endpoint = 'http://127.0.0.1:5001/text-processing/ner'
+respond_handler = 'http://127.0.0.1:5000/text-enrichment/processed-entities'
 
 documents = {}
 google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
@@ -63,8 +63,7 @@ def get_results(doc_id):
                        'entities': json.dumps(documents[doc_id].entities, cls=EntityEncoder)})
 
 
-# /text_enrichment/upload_entities ❌
-@app.route('/text_enrichment/doc/entities', methods=['POST'])
+@app.route('/text-enrichment/processed-entities', methods=['POST'])
 def add_entities():
     r_data = json.loads(request.data)
     for doc in documents.values():
