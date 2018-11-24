@@ -1,13 +1,10 @@
-from random import randint
-
-import googlemaps
 import requests
 import simplejson as json
 import wikipedia as wiki
 from flask import Flask, request, render_template
 from werkzeug.exceptions import abort
 
-from document import Document, supported_entities
+from document import Document, supported_entities, documents
 from entity import EntityEncoder
 
 app = Flask(__name__)
@@ -15,27 +12,13 @@ app = Flask(__name__)
 ner_endpoint = 'http://127.0.0.1:5001/text-processing/ner'
 respond_handler = 'http://127.0.0.1:5000/text-enrichment/processed-entities'
 
-documents = {}
-google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
-gmaps = googlemaps.Client(key=google_api_key)
-cse_engine_id = '005196073466017333319:sj3-tx-jmis'
-wiki.set_lang('en')
-
-
-def gen_doc_id():
-    new_id = randint(100000, 999999)
-    while new_id in documents.keys():
-        randint(100000, 999999)
-    return 'doc-' + str(new_id)
-
 
 @app.route('/text-enrichment/new-doc', methods=['POST'])
 def add_document():
     if 'text' not in json.loads(request.data).keys():
         abort(400)
-    doc_id = gen_doc_id()
-    doc = Document(request.data, doc_id)
-    documents[doc_id] = doc
+    doc = Document(request.data)
+    documents[doc.id] = doc
     doc.status = 'in progress'
     requests.post(ner_endpoint, json={'endpoint': respond_handler, 'id': doc.data_id, 'text': doc.text})
     return doc.id
@@ -102,4 +85,5 @@ def get_summary(doc_id):
 
 
 if __name__ == "__main__":
+    wiki.set_lang('en')
     app.run()

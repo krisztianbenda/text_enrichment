@@ -6,8 +6,17 @@ from unidecode import unidecode
 from entity import Entity
 from label import process_loc, process_gpe, process_event, process_org, process_work_of_art, process_date, \
     process_time, process_person
+from random import randint
 
 supported_entities = ['LOC', 'GPE', 'EVENT', 'ORG', 'WORK_OF_ART', 'DATE', 'TIME', 'PERSON']
+documents = {}
+
+
+def gen_doc_id():
+    new_id = randint(100000, 999999)
+    while new_id in documents.keys():
+        randint(100000, 999999)
+    return 'doc-' + str(new_id)
 
 
 class Document:
@@ -18,9 +27,9 @@ class Document:
     entities: [Entity]
     required_labels: [str]
 
-    def __init__(self, json_string, doc_id):
+    def __init__(self, json_string):
         self.__dict__ = json.loads(json_string)
-        self.id = doc_id
+        self.id = gen_doc_id()
         self.data_id = str(uuid())
         self.status = 'initialized'
         self.entities = []
