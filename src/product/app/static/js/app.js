@@ -5,12 +5,12 @@ function sendDoc() {
     } else {
         dataJSON['text'] = document.getElementById("userDoc").value;
         $.ajax({
-            url: '/',
+            url: '/text-enrichment/new-doc',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(dataJSON),
             success: function(doc_id) {
-                window.location.href = "http://127.0.0.1:5000/text_enrichment/"+doc_id;
+                window.location.href = "http://127.0.0.1:5000/text-enrichment/"+doc_id;
             }
         });
     }

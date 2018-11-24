@@ -29,8 +29,7 @@ def gen_doc_id():
     return 'doc-' + str(new_id)
 
 
-# /text_enrichment/new_doc ❌
-@app.route('/', methods=['POST'])
+@app.route('/text-enrichment/new-doc', methods=['POST'])
 def add_document():
     if 'text' not in json.loads(request.data).keys():
         abort(400)
@@ -42,22 +41,19 @@ def add_document():
     return doc.id
 
 
-# /text_enrichment ✅
-@app.route('/text_enrichment', methods=['GET'])
+@app.route('/text-enrichment', methods=['GET'])
 def index():
     return render_template('index.html', supported_entities=supported_entities)
 
 
-# /text_enrichment/<doc_id> ✅
-@app.route('/text_enrichment/<doc_id>', methods=['GET'])
+@app.route('/text-enrichment/<doc_id>', methods=['GET'])
 def get_results_page(doc_id):
     if doc_id not in documents.keys():
         abort(404)
     return render_template('results.html')
 
 
-# /text_enrichment/<doc_id>/results ❌
-@app.route('/api/<doc_id>', methods=['GET'])
+@app.route('/text-enrichment/<doc_id>/results', methods=['GET'])
 def get_results(doc_id):
     if doc_id not in documents.keys():
         abort(404)
@@ -78,15 +74,14 @@ def add_entities():
     return 'ok'
 
 
-# /text_enrichment/<doc_id>/labels ✅
-@app.route('/text_enrichment/<doc_id>/labels', methods=['GET'])
+@app.route('/text-enrichment/<doc_id>/labels', methods=['GET'])
 def get_labels(doc_id):
     if doc_id not in documents.keys():
         abort(404)
     return json.dumps({"labels": documents[doc_id].get_labels()})
 
 
-@app.route('/text_enrichment/<doc_id>/summary', methods=['GET'])
+@app.route('/text-enrichment/<doc_id>/summary', methods=['GET'])
 def get_summary(doc_id):
     if doc_id not in documents.keys():
         abort(404)
