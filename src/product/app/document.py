@@ -7,6 +7,8 @@ from entity import Entity
 from label import process_loc, process_gpe, process_event, process_org, process_work_of_art, process_date, \
     process_time, process_person
 
+supported_entities = ['LOC', 'GPE', 'EVENT', 'ORG', 'WORK_OF_ART', 'DATE', 'TIME', 'PERSON']
+
 
 class Document:
     text: str

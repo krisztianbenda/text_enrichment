@@ -1,0 +1,55 @@
+#userDoc {
+    resize: none;
+    height:100%;
+}
+
+h1 {
+padding-top: 40px;
+font-weight: 300;
+color: #32D972;
+}
+
+h2 {
+font-weight: 400;
+color: #32D972;
+}
+
+.header {
+background-color: #F1F1F1;
+}
+
+.main{
+padding: 10px;
+padding-top: 30px;
+background-color:#DCDCDC;
+}
+
+textarea {
+background-color: #D6D6D6;
+color:#4D5057;
+font-weight: 400;
+}
+
+.entity-name {
+color:#4D5057;
+}
+
+input:checked~.switch-paddle {
+background: #32D972;
+}
+
+button {
+   font-weight: 300;
+}
+
+
+
+textarea::-webkit-input-placeholder {
+color: #4D5057;
+font-weight: 400;
+}
+
+textarea:-ms-input-placeholder {
+color: #4D5057;
+font-weight: 400;
+}

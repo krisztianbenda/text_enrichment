@@ -7,7 +7,7 @@ import wikipedia as wiki
 from flask import Flask, request, render_template
 from werkzeug.exceptions import abort
 
-from document import Document
+from document import Document, supported_entities
 from entity import EntityEncoder
 
 app = Flask(__name__)
@@ -45,7 +45,7 @@ def add_document():
 # /text_enrichment ✅
 @app.route('/text_enrichment', methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('index.html', supported_entities=supported_entities)
 
 
 # /text_enrichment/<doc_id> ✅
