@@ -54,7 +54,7 @@ def build_image_search_link(expression):
 
 
 def build_search_link(expression):
-    return "https://www.google.hu/search?hl=en&q=" + unidecode.unidecode(expression).replace(' ', '+')
+    return "https://www.google.hu/search?hl=en&q=" + unidecode(expression).replace(' ', '+')
 
 
 def process_loc(location):
