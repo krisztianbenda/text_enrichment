@@ -1,11 +1,10 @@
 from uuid import uuid4 as uuid
+import label
 
 import simplejson as json
 from unidecode import unidecode
 
 from entity import Entity
-from label import process_loc, process_gpe, process_event, process_org, process_work_of_art, process_date, \
-    process_time, process_person
 from random import randint
 
 supported_entities = ['LOC', 'GPE', 'EVENT', 'ORG', 'WORK_OF_ART', 'DATE', 'TIME', 'PERSON']
@@ -42,31 +41,33 @@ class Document:
             self.required_labels = ['LOC', 'GPE', 'EVENT', 'ORG', 'WORK_OF_ART', 'DATE', 'TIME', 'PERSON']
 
     def process_entities(self, entities):
-        entity_options = {'LOC': process_loc,
-                          'GPE': process_gpe,
-                          'EVENT': process_event,
-                          'ORG': process_org,
-                          'WORK_OF_ART': process_work_of_art,
-                          'DATE': process_date,
-                          'TIME': process_time,
-                          'PERSON': process_person
+        entity_options = {'LOC': label.LocLabel,
+                          'GPE': label.GpeLabel,
+                          'EVENT': label.EventLabel,
+                          'ORG': label.OrgLabel,
+                          'WORK_OF_ART': label.WordOfArtLabel,
+                          'DATE': label.DateLabel,
+                          'TIME': label.TimeLabel,
+                          'PERSON': label.PersonLabel
                           }
         for entity in entities:
             if len(entity) != 4:
                 print('There is a problem with the entity fields length: {}'.format(entity))
                 continue
             if entity[1] in entity_options.keys() and entity[1] in self.required_labels:
-                link = entity_options[entity[1]](entity[0])
+                label_obj = entity_options[entity[1]](entity[0])
+                link = label_obj.process_label()
                 new_entity: Entity = Entity(unidecode(entity[0]), entity[1], entity[2], entity[3], link)
                 self.entities.append(new_entity)
             else:
                 '''Found entity not supported'''
                 print('Found entity not supported or not required: {} - {}'.format(entity[0], entity[1]))
 
-    def get_labels(self):
+    def get_label_names(self) -> [str]:
         labels = []
         for entity in self.entities:
             if entity.label not in labels:
                 labels.append(entity.label)
         labels.sort()
         return labels
+

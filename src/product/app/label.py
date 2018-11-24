@@ -5,91 +5,104 @@ import wikipedia as wiki
 from unidecode import unidecode
 import googlemaps
 
-
 google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
 gmaps = googlemaps.Client(key=google_api_key)
 
 
-def build_maps_link(place):
-    # geocode_results = gmaps.geocode(place)
-    # Erdetileg ez lenne a valasz a Mount Everestre:
-    geocode_results = [{'address_components': [
-        {'long_name': 'Mount Everest', 'short_name': 'Monte Everest', 'types': ['establishment', 'natural_feature']}],
-        'formatted_address': 'Mt Everest',
-        'geometry': {'location': {'lat': 27.9881206, 'lng': 86.9249751}, 'location_type': 'APPROXIMATE',
-                     'viewport': {'northeast': {'lat': 27.9979732, 'lng': 86.94098249999999},
-                                  'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}},
-        'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'},
-        'types': ['establishment', 'natural_feature']}]
-    if len(geocode_results) == 0:
-        '''Location Not Found => we just search for it on Google'''
-        return build_wiki_link(place)
-    return ('https://www.google.com/maps/search/?api=1&' +
-            'query=' + str(geocode_results[0]['geometry']['location']['lat']) +
-            ',' + str(geocode_results[0]['geometry']['location']['lng']) +
-            '&query_place_id=' + str(geocode_results[0]['place_id']))
+class Label:
+    expression: str
+
+    def __init__(self, name):
+        self.expression = name
+
+    def build_search_link(self):
+        return "https://www.google.hu/search?hl=en&q=" + unidecode(self.expression).replace(' ', '+')
+
+    def build_wiki_link(self):
+        try:
+            return wiki.page(self.expression).url
+        except wiki.exceptions.PageError:
+            return self.build_search_link()
+
+    def build_maps_link(self):
+        # geocode_results = gmaps.geocode(self.name)
+        # Erdetileg ez lenne a valasz a Mount Everestre:
+        geocode_results = [{'address_components': [
+            {'long_name': 'Mount Everest', 'short_name': 'Monte Everest',
+             'types': ['establishment', 'natural_feature']}],
+            'formatted_address': 'Mt Everest',
+            'geometry': {'location': {'lat': 27.9881206, 'lng': 86.9249751}, 'location_type': 'APPROXIMATE',
+                         'viewport': {'northeast': {'lat': 27.9979732, 'lng': 86.94098249999999},
+                                      'southwest': {'lat': 27.9782671, 'lng': 86.90896769999999}}},
+            'place_id': 'ChIJvZ69FaJU6DkRsrqrBvjcdgU', 'plus_code': {'global_code': '7MV8XWQF+6X'},
+            'types': ['establishment', 'natural_feature']}]
+        if len(geocode_results) == 0:
+            '''Location Not Found => we just search for it on Google'''
+            return self.build_wiki_link()
+        return ('https://www.google.com/maps/search/?api=1&' +
+                'query=' + str(geocode_results[0]['geometry']['location']['lat']) +
+                ',' + str(geocode_results[0]['geometry']['location']['lng']) +
+                '&query_place_id=' + str(geocode_results[0]['place_id']))
+
+    def build_calendar_link(self):
+        # noinspection PyBroadException
+        try:
+            date = time_parser.parse(self.expression)
+            return ('https://www.google.com/calendar/render?action=TEMPLATE&' +
+                    'text=' + 'Event+From+Text+Enrichment' +
+                    '&dates=' + date.strftime('%Y%m%dT%H%M%SZ') + '/' + (date + timedelta(hours=1)).strftime(
+                        '%Y%m%dT%H%M%SZ') +
+                    '&details=' + 'This+date+and+time+found+by+text+enrichment'
+                    # + '&location=' + 'Waldorf+Astoria,+301+Park+Ave+,+New+York,+NY+10022&sf=true&output=xml'
+                    )
+        except ValueError as err:
+            print(err)
+            return 'NOT_SUPPORTED'
+
+    def build_image_search_link(self):
+        return "https://www.google.hu/search?hl=en&tbm=isch&q=" + self.expression.replace(' ', '+')
+
+    def process_label(self):
+        return self.build_search_link()
 
 
-def build_calendar_link(datetime_string):
-    # noinspection PyBroadException
-    try:
-        date = time_parser.parse(datetime_string)
-        return ('https://www.google.com/calendar/render?action=TEMPLATE&' +
-                'text=' + 'Event+From+Text+Enrichment' +
-                '&dates=' + date.strftime('%Y%m%dT%H%M%SZ') + '/' + (date + timedelta(hours=1)).strftime(
-                    '%Y%m%dT%H%M%SZ') +
-                '&details=' + 'This+date+and+time+found+by+text+enrichment'
-                # + '&location=' + 'Waldorf+Astoria,+301+Park+Ave+,+New+York,+NY+10022&sf=true&output=xml'
-                )
-    except ValueError as err:
-        print(err)
-        return 'NOT_SUPPORTED'
+class GpeLabel(Label):
+    def process_label(self):
+        return self.build_maps_link()
 
 
-def build_wiki_link(entity):
-    try:
-        return wiki.page(entity).url
-    except:
-        return build_search_link(entity)
+class LocLabel(Label):
+    def process_label(self):
+        return self.build_maps_link()
 
 
-def build_image_search_link(expression):
-    return "https://www.google.hu/search?hl=en&tbm=isch&q=" + expression.replace(' ', '+')
+class OrgLabel(Label):
+    def process_label(self):
+        return self.build_wiki_link()
 
 
-def build_search_link(expression):
-    return "https://www.google.hu/search?hl=en&q=" + unidecode(expression).replace(' ', '+')
+class EventLabel(Label):
+    def process_label(self):
+        return self.build_wiki_link()
 
 
-def process_loc(location):
-    return build_maps_link(location)
+class WordOfArtLabel(Label):
+    def process_label(self):
+        return self.build_image_search_link()
 
 
-def process_gpe(gpe):
-    return build_maps_link(gpe)
+class DateLabel(Label):
+    def process_label(self):
+        link = self.build_calendar_link()
+        return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
 
 
-def process_org(org):
-    return build_wiki_link(org)
+class TimeLabel(Label):
+    def process_label(self):
+        link = self.build_calendar_link()
+        return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
 
 
-def process_event(event):
-    return build_wiki_link(event)
-
-
-def process_work_of_art(woa):
-    return build_image_search_link(woa)
-
-
-def process_date(date):
-    link = build_calendar_link(date)
-    return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
-
-
-def process_time(time):
-    link = build_calendar_link(time)
-    return link if link != 'NOT_SUPPORTED' else "Format is currently not supported"
-
-
-def process_person(person):
-    return build_wiki_link(person)
+class PersonLabel(Label):
+    def process_label(self):
+        return self.build_wiki_link()

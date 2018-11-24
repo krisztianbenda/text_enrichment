@@ -60,7 +60,7 @@ def add_entities():
 def get_labels(doc_id):
     if doc_id not in documents.keys():
         abort(404)
-    return json.dumps({"labels": documents[doc_id].get_labels()})
+    return json.dumps({"labels": documents[doc_id].get_label_names()})
 
 
 @app.route('/text-enrichment/<doc_id>/summary', methods=['GET'])
@@ -68,7 +68,7 @@ def get_summary(doc_id):
     if doc_id not in documents.keys():
         abort(404)
 
-    labels = documents[doc_id].get_labels()
+    labels = documents[doc_id].get_label_names()
     label_summary = []
     summary = {}
     for label in labels:
