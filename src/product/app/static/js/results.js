@@ -7,12 +7,12 @@ function parseResults(text, entities) {
     lastChar = 0;
     entities.forEach(entity => {
         if (lastChar != entity.start_char) {
-            parsedText.push({text:text.substring(lastChar, entity.start_char),etype:'text'});
+            parsedText.push({ text: text.substring(lastChar, entity.start_char), etype: 'text' });
         }
-        parsedText.push({text:text.substring(entity.start_char, entity.end_char),etype:'entity',params:entity});
+        parsedText.push({ text: text.substring(entity.start_char, entity.end_char), etype: 'entity', params: entity });
         lastChar = entity.end_char;
     });
-    parsedText.push({text:text.substring(lastChar),etype:'text'});
+    parsedText.push({ text: text.substring(lastChar), etype: 'text' });
 
     return parsedText;
 }
@@ -31,8 +31,12 @@ function generateResultText(parsedText) {
             mark = document.createElement('a');
             mark.className = 'entity-mark entity-' + fragment.params.label_name;
             mark.innerText = fragment.text;
-            mark.href = fragment.params.link;
-            mark.target = '_blank';
+            if ('Format is currently not supported' === fragment.params.link) {
+                mark.className += ' invalid-link';
+            } else {
+                mark.href = fragment.params.link;
+                mark.target = '_blank';
+            }
             result.appendChild(mark);
             span = document.createElement('span');
             span.className = 'entity-span';
@@ -57,7 +61,7 @@ function poll() {
                 setTimeout(poll, 500);
             } else if (data.status === 'processed') {
                 ents = JSON.parse(data.entities)
-                generateResultText(parseResults(data.text,JSON.parse(data.entities)));
+                generateResultText(parseResults(data.text, JSON.parse(data.entities)));
                 resultsAreReady = true;
                 document.getElementById('loader').className = 'hide';
             }
@@ -74,8 +78,8 @@ function generateSummary(data) {
         li = document.createElement('li');
         summary.appendChild(li);
         h3 = document.createElement('h3');
-        h3.innerText = '#'+label;
-        h3.className = 'sum-entity-type sum-entity-'+label;
+        h3.innerText = '#' + label;
+        h3.className = 'sum-entity-type sum-entity-' + label;
         li.appendChild(h3);
         ul = document.createElement('ul');
         ul.className = 'menu';
@@ -84,10 +88,14 @@ function generateSummary(data) {
             li2 = document.createElement('li')
             ul.appendChild(li2);
             a = document.createElement('a');
-            a.href = entity.link;
-            a.target = '_blank';
-            a.innerText = entity.expression;
             a.className = 'sum-entity';
+            if ('Format is currently not supported' === entity.link) {
+                a.className += ' invalid-link';
+            } else {
+                a.href = entity.link;
+                a.target = '_blank';
+            }
+            a.innerText = entity.expression;
             li2.appendChild(a);
         });
     });
@@ -101,7 +109,7 @@ function getSummary() {
         type: 'GET',
         success: function (data) {
             data = JSON.parse(data);
-            sum=data;
+            sum = data;
             generateSummary(data);
             summaryIsReady = true;
             document.getElementById('results-container').className = 'hide';

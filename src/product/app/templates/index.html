@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>text enrichment</title>
@@ -7,53 +8,56 @@
     <link rel="stylesheet" href="../static/css/app.css">
     <script src="../static/js/vendor/jquery-3.3.1.min.js"></script>
 </head>
+
 <body>
 
-<div class="container">
-<div class="grid-y medium-grid-frame">
-    <div class="cell shrink header medium-cell-block-container large-2">
-        <div class="grid-x grid-padding-x">
-        <div class="cell medium-1 large-1 medium-cell-block-y"></div>
-        <div class="cell medium-11 large-11 medium-cell-block-y">
-            <h1 class="text-left">text enrichment</h1>
-        </div>
-        </div>
-    </div>
-    <div class="cell medium-auto medium-cell-block-container large-10 main">
-        <div class="grid-x grid-padding-x">
-            <div class="cell large-1 medium-1 medium-cell-block-y"></div>
-            <div class="container cell large-6 medium-6 medium-cell-block-y">
-                <textarea class="large" placeholder="Type or paste text" id="userDoc"></textarea>
-            </div>
-            <div class="container cell large-4 medium-cell-block-y">
-                <h2>Named entities</h2>
-
-                {% for entity in supported_entities %}
+    <div class="container">
+        <div class="grid-y medium-grid-frame">
+            <div class="cell shrink header medium-cell-block-container large-2">
                 <div class="grid-x grid-padding-x">
-                    <div class="cell large-4 entity-name">{{ entity }}</div>
-                    <div class="cell large-8">
-                        <div class="switch small">
-                            <input class="switch-input entity-switch" id="switch_{{ entity }}" type="checkbox" name="exampleSwitch" checked>
-                            <label class="switch-paddle" for="switch_{{ entity }}">
-                                <span class="show-for-sr">{{ entity }}</span>
-                            </label>
-                        </div>
+                    <div class="cell medium-1 large-1 medium-cell-block-y"></div>
+                    <div class="cell medium-11 large-11 medium-cell-block-y">
+                        <h1 class="text-left">text enrichment</h1>
                     </div>
                 </div>
-                {% endfor %}
-
-                <button type="button" class="success button" id="startButton" onclick="sendDoc()">Process</button>
-
-                <div id="docId"></div>
-
-
             </div>
-            <div class="cell large-1 medium-cell-block-y"></div>
+            <div class="cell medium-auto medium-cell-block-container large-10 main">
+                <div class="grid-x grid-padding-x">
+                    <div class="cell large-1 medium-1 medium-cell-block-y"></div>
+                    <div class="container cell large-6 medium-6 medium-cell-block-y">
+                        <textarea class="large" placeholder="Type or paste text" id="userDoc"></textarea>
+                    </div>
+                    <div class="container cell large-4 medium-cell-block-y">
+                        <h2>Named entities</h2>
+
+                        {% for entity in supported_entities %}
+                        <div class="grid-x grid-padding-x">
+                            <div class="cell large-4 entity-name">{{ entity }}</div>
+                            <div class="cell large-8">
+                                <div class="switch small">
+                                    <input class="switch-input entity-switch" id="switch_{{ entity }}" type="checkbox"
+                                        name="exampleSwitch" checked>
+                                    <label class="switch-paddle" for="switch_{{ entity }}">
+                                        <span class="show-for-sr">{{ entity }}</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <button type="button" class="success button" id="startButton" onclick="sendDoc()">Process</button>
+
+                        <div id="docId"></div>
+
+
+                    </div>
+                    <div class="cell large-1 medium-cell-block-y"></div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-</div>
 
-<script src="../static/js/app.js"></script>
+    <script src="../static/js/app.js"></script>
 </body>
+
 </html>

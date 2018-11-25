@@ -9,8 +9,8 @@ from entity import EntityEncoder
 
 app = Flask(__name__)
 
-ner_endpoint = 'http://127.0.0.1:5001/text-processing/ner'
-respond_handler = 'http://127.0.0.1:5000/text-enrichment/processed-entities'
+ner_endpoint = 'http://172.17.0.1:5001/text-processing/ner'
+respond_handler = 'http://172.17.0.1:5000/text-enrichment/processed-entities'
 
 
 @app.route('/text-enrichment/new-doc', methods=['POST'])
@@ -87,4 +87,4 @@ def get_summary(doc_id):
 
 if __name__ == "__main__":
     wiki.set_lang('en')
-    app.run()
+    app.run(host='0.0.0.0', port=5000)

@@ -1,7 +1,7 @@
 function sendDoc() {
     var switches = document.getElementsByClassName('entity-switch');
     var entities = [];
-    for (i=0; i < switches.length; i++) {
+    for (i = 0; i < switches.length; i++) {
         if (switches[i].checked) {
             entities.push(switches[i].id.split('_')[1]);
         }
@@ -12,7 +12,7 @@ function sendDoc() {
         console.info('no doc to process');
     } else if (entities.length == 0) {
         console.info('no selected entity')
-    }else {
+    } else {
         dataJSON['text'] = document.getElementById("userDoc").value;
         dataJSON['required_labels'] = entities;
         $.ajax({
@@ -20,8 +20,8 @@ function sendDoc() {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(dataJSON),
-            success: function(doc_id) {
-                window.location.href = "http://127.0.0.1:5000/text-enrichment/"+doc_id;
+            success: function (doc_id) {
+                window.location.href = "http://127.0.0.1:5000/text-enrichment/" + doc_id;
             }
         });
     }
