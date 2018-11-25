@@ -38,7 +38,7 @@ class Document:
             for label in input_json['required_labels']:
                 self.required_labels.append(label)
         else:
-            self.required_labels = ['LOC', 'GPE', 'EVENT', 'ORG', 'WORK_OF_ART', 'DATE', 'TIME', 'PERSON']
+            '''Don't process labels'''
 
     def process_entities(self, entities):
         entity_options = {'LOC': label.LocLabel,
