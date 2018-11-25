@@ -43,7 +43,8 @@ def get_results(doc_id):
     if documents[doc_id].status == 'in progress':
         return json.dumps({'status': 'in progress'})
     return json.dumps({'status': documents[doc_id].status,
-                       'entities': json.dumps(documents[doc_id].entities, cls=EntityEncoder)})
+                       'entities': json.dumps(documents[doc_id].entities, cls=EntityEncoder),
+                       'text': documents[doc_id].text})
 
 
 @app.route('/text-enrichment/processed-entities', methods=['POST'])
@@ -74,14 +75,14 @@ def get_summary(doc_id):
     for label in labels:
         summary[label] = []
         for entity in documents[doc_id].entities:
-            if entity.label == label:
+            if entity.label_name == label:
                 label_summary.append({'expression': entity.expression,
                                       'start_char': entity.start_char,
                                       'end_char': entity.end_char,
                                       'link': entity.link})
         summary[label] = label_summary
         label_summary = []
-    return json.dumps(summary)
+    return json.dumps({"summary": summary, "labels": documents[doc_id].get_label_names()})
 
 
 if __name__ == "__main__":

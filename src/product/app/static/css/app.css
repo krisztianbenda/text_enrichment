@@ -24,7 +24,7 @@ padding-top: 30px;
 background-color:#DCDCDC;
 }
 
-textarea {
+textarea, textarea:focus {
 background-color: #D6D6D6;
 color:#4D5057;
 font-weight: 400;

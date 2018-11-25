@@ -66,8 +66,8 @@ class Document:
     def get_label_names(self) -> [str]:
         labels = []
         for entity in self.entities:
-            if entity.label not in labels:
-                labels.append(entity.label)
+            if entity.label_name not in labels:
+                labels.append(entity.label_name)
         labels.sort()
         return labels
 

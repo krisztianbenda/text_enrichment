@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Text enrichment</title>
+    <title>text enrichment</title>
     <link rel="stylesheet" href="../static/css/foundation.min.css">
     <link rel="stylesheet" href="../static/css/app.css">
     <script src="../static/js/vendor/jquery-3.3.1.min.js"></script>
@@ -13,19 +13,19 @@
 <div class="grid-y medium-grid-frame">
     <div class="cell shrink header medium-cell-block-container large-2">
         <div class="grid-x grid-padding-x">
-        <div class="cell medium-0 large-1 medium-cell-block-y"></div>
-        <div class="cell medium-12 large-11 medium-cell-block-y">
-            <h1 class="text-left">Text enrichment</h1>
+        <div class="cell medium-1 large-1 medium-cell-block-y"></div>
+        <div class="cell medium-11 large-11 medium-cell-block-y">
+            <h1 class="text-left">text enrichment</h1>
         </div>
         </div>
     </div>
     <div class="cell medium-auto medium-cell-block-container large-10 main">
         <div class="grid-x grid-padding-x">
-            <div class="cell medium-0 large-1 medium-cell-block-y"></div>
-            <div class="container cell medium-8 large-6 medium-cell-block-y">
+            <div class="cell large-1 medium-1 medium-cell-block-y"></div>
+            <div class="container cell large-6 medium-6 medium-cell-block-y">
                 <textarea class="large" placeholder="Type or paste text" id="userDoc"></textarea>
             </div>
-            <div class="container cell medium-4 large-4 medium-cell-block-y">
+            <div class="container cell large-4 medium-cell-block-y">
                 <h2>Named entities</h2>
 
                 {% for entity in supported_entities %}
@@ -33,7 +33,7 @@
                     <div class="cell large-4 entity-name">{{ entity }}</div>
                     <div class="cell large-8">
                         <div class="switch small">
-                            <input class="switch-input" id="switch_{{ entity }}" type="checkbox" name="exampleSwitch">
+                            <input class="switch-input entity-switch" id="switch_{{ entity }}" type="checkbox" name="exampleSwitch" checked>
                             <label class="switch-paddle" for="switch_{{ entity }}">
                                 <span class="show-for-sr">{{ entity }}</span>
                             </label>
@@ -48,7 +48,7 @@
 
 
             </div>
-            <div class="cell medium-0 large-1 medium-cell-block-y"></div>
+            <div class="cell large-1 medium-cell-block-y"></div>
         </div>
     </div>
 </div>

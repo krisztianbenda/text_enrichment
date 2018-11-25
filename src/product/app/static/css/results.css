@@ -1,0 +1,76 @@
+#loader {
+    background: #4D5057;
+    color: #F1F1F1;
+    opacity: 0.8;
+    font-size: 7em;
+    font-weight: 300;
+    z-index: 100;
+    top: 0;
+    position: absolute;
+    width: 100vw;
+}
+
+
+.results {
+    line-height: 2.5;
+    color: #4D5057;
+}
+
+a, a:hover {
+    color: #4D5057;
+}
+
+.entity-mark {
+    background: #7aecec;
+    padding: 0.45em 0.6em;
+    margin: 0 0.25em;
+    line-height: 1;
+    border-radius: 0.35em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    color: #F1F1F1;
+}
+.entity-span {
+    font-size: 0.8em; font-weight: bold;
+    line-height: 1; border-radius: 0.35em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 0.5rem
+}
+
+.entity-text {
+    background: #DCDCDC;
+    color: #4D5057;
+    margin: 0;
+}
+
+.entity-LOC {
+    background: #0a84ff;
+}
+
+.entity-GPE{
+    background: #bf5af2;
+}
+
+.entity-EVENT{
+    background: #98989d;
+}
+.entity-ORG{
+    background: #ff9f0a;
+}
+
+.entity-WORK_OF_ART{
+    background: #ff375f;
+}
+
+.entity-DATE{
+    background: #ac8e68;
+}
+
+.entity-TIME{
+    background: #ff453a;
+}
+
+.entity-PERSON{
+    background: #ffd60a;
+}
