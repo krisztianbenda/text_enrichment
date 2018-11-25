@@ -46,9 +46,6 @@ function generateResultText(parsedText) {
     });
 }
 
-var ents;
-var sum;
-
 function poll() {
     url = document.URL.split('/')
     doc_id = url[url.length - 1]
@@ -60,7 +57,6 @@ function poll() {
             if (data.status === 'in progress') {
                 setTimeout(poll, 500);
             } else if (data.status === 'processed') {
-                ents = JSON.parse(data.entities)
                 generateResultText(parseResults(data.text, JSON.parse(data.entities)));
                 resultsAreReady = true;
                 document.getElementById('loader').className = 'hide';
@@ -109,7 +105,6 @@ function getSummary() {
         type: 'GET',
         success: function (data) {
             data = JSON.parse(data);
-            sum = data;
             generateSummary(data);
             summaryIsReady = true;
             document.getElementById('results-container').className = 'hide';
