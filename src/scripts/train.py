@@ -11,7 +11,7 @@ import simplejson as json
 
 IT_N = 100
 SEN_N = 500
-OUT_FILE = os.path.join(os.getcwd(), 'datasets', 'TrainingPrediction.csv')
+OUT_FILE = os.path.join(os.getcwd(), 'datasets', 'm3')
 parser = argparse.ArgumentParser(prog='Train SpaCy', 
     description="This script can train a blank eng SpaCy model with a custom iteration on given number of sentences")
 parser.add_argument('-i', '--iteration_number', type=int, default=IT_N,
@@ -19,7 +19,7 @@ parser.add_argument('-i', '--iteration_number', type=int, default=IT_N,
 parser.add_argument('-s', '--sentence_number', type=int, default=SEN_N, 
                     help='Say how many sentence you would like to use on training. Max is 9000, but default is: {}'.format(SEN_N))
 parser.add_argument('-o', '--output_file', type=str, default=OUT_FILE,
-                    help='Where do you want to store your results. Default is: {}'.format(OUT_FILE))
+                    help='Where do you want to save the model. Default is: {}'.format(OUT_FILE))
 
 
 def get_data(trainf, testf):
@@ -78,8 +78,6 @@ def main():
                 scores = evaluate(nlp,test_data)
                 print(scores)
                 nlp.to_disk(OUT_FILE)
-
-                # print("Accuracy {:0.4f}\tRight {:0.0f}\tWrong {:0.0f}\tUnknown {:0.0f}\tEntities {:0.0f}".format(scores['acc'], scores['right'],scores['wrong'],scores['unk'],scores['ents']))
 
 
     print(evaluate(nlp,test_data))
