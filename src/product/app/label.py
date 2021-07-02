@@ -5,9 +5,9 @@ import wikipedia as wiki
 from unidecode import unidecode
 import googlemaps
 
-# To use Google Maps we need to provide a Goohle API key.
+# To use Google Maps we need to provide a Google API key.
 # If API key not provided, the program will use the Mount Everest as default location to every LOC and GPE
-google_api_key = 'AIzaSyDHPFTie9AvvVFqXTCI5a43UBI8qkzLvXk'
+google_api_key = 'XXXX-XXXX-XXXX-XXXX'
 gmaps = googlemaps.Client(key=google_api_key)
 
 
