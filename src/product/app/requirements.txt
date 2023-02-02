@@ -5,4 +5,4 @@ simplejson==3.16.0
 Unidecode==1.0.23
 wikipedia==1.4.0
 googlemaps==3.0.2
-Werkzeug==0.15.3
+Werkzeug==0.15.5
